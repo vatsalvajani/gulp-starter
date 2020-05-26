@@ -14,61 +14,80 @@ gulp.task('hello', async function() {
   console.log('Hello Vatsal');
 });
 
-// Start browserSync server
-gulp.task('browserSync', function() {
-  browserSync({
+// compile scss into css
+function style(){
+  return gulp.src('app/scss/**/*.scss')
+    .pipe(sass())
+    .pipe(gulp.dest('app/css'))
+    .pipe(browserSync.stream());
+}
+
+function watch() {
+  browserSync.init({
     server: {
       baseDir: 'app'
     }
-  })
-})
+  });
+  gulp.watch('app/scss/**/*.scss', style);
+  gulp.watch('app/*.html').on('change', browserSync.reload);
+}
 
-gulp.task('sass', async function() {
-  return gulp.src('app/scss/main.scss')
-    .pipe(sass())
-    .pipe(gulp.dest('app/css'))
-    .pipe(browserSync.reload({
-      stream: true
-    }))
-});
+exports.style = style;
+exports.watch = watch;
 
-// Watchers
-gulp.task('watch', function() {
-  gulp.watch('app/scss/**/*.scss', gulp.series(['sass']));
-  gulp.watch('app/*.html', browserSync.reload);
-  gulp.watch('app/js/**/*.js', browserSync.reload);
-})
+// // Start browserSync server
+// gulp.task('browserSync', function() {
+//   browserSync({
+//     server: {
+//       baseDir: 'app'
+//     }
+//   })
+// })
 
-// Optimizing CSS and JavaScript 
-gulp.task('useref', function() {
+// gulp.task('sass', async function() {
+//   return gulp.src('app/scss/main.scss')
+//     .pipe(sass())
+//     .pipe(gulp.dest('app/css'))
+//     .pipe(browserSync.stream());
+// });
 
-  return gulp.src('app/*.html')
-    .pipe(useref())
-    .pipe(gulpIf('*.js', uglify()))
-    .pipe(gulpIf('*.css', cssnano()))
-    .pipe(gulp.dest('dist'));
-});
+// // Watchers
+// gulp.task('watch', function() {
+//   gulp.watch('app/scss/**/*.scss', gulp.series(['sass']));
+//   gulp.watch('app/*.html').on('change', browserSync.reload);
+//   gulp.watch('app/js/**/*.js', browserSync.reload);
+// })
 
-// Optimizing Images 
-gulp.task('images', function() {
-  return gulp.src('app/images/**/*.+(png|jpg|jpeg|gif|svg)')
-    .pipe(cache(imagemin({
-      interlaced: true,
-    })))
-    .pipe(gulp.dest('dist/images'))
-});
+// // Optimizing CSS and JavaScript 
+// gulp.task('useref', function() {
 
-// Fonts
-gulp.task('fonts', function() {
-  return gulp.src('app/fonts/**/*')
-  .pipe(gulp.dest('dist/fonts'))
-})
+//   return gulp.src('app/*.html')
+//     .pipe(useref())
+//     .pipe(gulpIf('*.js', uglify()))
+//     .pipe(gulpIf('*.css', cssnano()))
+//     .pipe(gulp.dest('dist'));
+// });
 
-gulp.task('clean:dist', async function() {
-  return del.sync('dist');
-})
+// // Optimizing Images 
+// gulp.task('images', function() {
+//   return gulp.src('app/images/**/*.+(png|jpg|jpeg|gif|svg)')
+//     .pipe(cache(imagemin({
+//       interlaced: true,
+//     })))
+//     .pipe(gulp.dest('dist/images'))
+// });
 
-// Combining task
-gulp.task('main', gulp.series('useref', 'images' , 'fonts', function (done) {
-  done();
-}));
+// // Fonts
+// gulp.task('fonts', function() {
+//   return gulp.src('app/fonts/**/*')
+//   .pipe(gulp.dest('dist/fonts'))
+// })
+
+// gulp.task('clean:dist', async function() {
+//   return del.sync('dist');
+// })
+
+// // Combining task
+// gulp.task('main', gulp.series('useref', 'images' , 'fonts', function (done) {
+//   done();
+// }));
